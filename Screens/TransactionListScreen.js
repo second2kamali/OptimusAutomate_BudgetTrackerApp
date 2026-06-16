@@ -3,8 +3,25 @@ import {
   View, Text, TouchableOpacity,
   StyleSheet, SafeAreaView, FlatList, Alert
 } from 'react-native';
-import { COLORS } from '../Constants/colors';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useBudget } from '../Context/BudgetContext';
+
+// --- SAME DARK THEME (No backend changes) ---
+const THEME = {
+  primary: '#6366F1',
+  primaryLight: '#818CF8',
+  background: '#0F172A',
+  surface: '#1E293B',
+  surfaceLight: '#334155',
+  border: '#334155',
+  white: '#F8FAFC',
+  black: '#F1F5F9',
+  grey: '#94A3B8',
+  muted: '#64748B',
+  income: '#34D399',
+  expense: '#F87171',
+  danger: '#EF4444',
+};
 
 export default function TransactionListScreen({ navigation }) {
   const { transactions, deleteTransaction } = useBudget();
@@ -29,11 +46,13 @@ export default function TransactionListScreen({ navigation }) {
   const renderTransaction = ({ item }) => (
     <View style={styles.transactionItem}>
       <View style={[styles.iconBox, {
-        backgroundColor: item.type === 'income' ? '#E8F8F0' : '#FEE8E8'
+        backgroundColor: item.type === 'income' ? THEME.income + '18' : THEME.expense + '18'
       }]}>
-        <Text style={styles.icon}>
-          {item.type === 'income' ? '📈' : '📉'}
-        </Text>
+        <MaterialIcons
+          name={item.type === 'income' ? 'arrow-downward' : 'arrow-upward'}
+          size={20}
+          color={item.type === 'income' ? THEME.income : THEME.expense}
+        />
       </View>
       <View style={styles.transactionInfo}>
         <Text style={styles.transactionTitle}>{item.title}</Text>
@@ -41,12 +60,15 @@ export default function TransactionListScreen({ navigation }) {
       </View>
       <View style={styles.transactionRight}>
         <Text style={[styles.transactionAmount, {
-          color: item.type === 'income' ? COLORS.income : COLORS.expense
+          color: item.type === 'income' ? THEME.income : THEME.expense
         }]}>
           {item.type === 'income' ? '+' : '-'} Rs. {item.amount.toLocaleString()}
         </Text>
-        <TouchableOpacity onPress={() => handleDelete(item.id)}>
-          <Text style={styles.deleteBtn}>🗑️</Text>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item.id)}
+        >
+          <MaterialIcons name="delete-outline" size={18} color={THEME.danger} />
         </TouchableOpacity>
       </View>
     </View>
@@ -54,14 +76,18 @@ export default function TransactionListScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>← Back</Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="arrow-back" size={22} color={THEME.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>📋 Transactions</Text>
-        <Text style={styles.countText}>{filteredTransactions.length}</Text>
+        <Text style={styles.headerTitle}>Transactions</Text>
+        <View style={styles.countBadge}>
+          <Text style={styles.countText}>{filteredTransactions.length}</Text>
+        </View>
       </View>
 
       {/* Filter Buttons */}
@@ -71,9 +97,15 @@ export default function TransactionListScreen({ navigation }) {
             key={type}
             style={[styles.filterBtn, filter === type && styles.filterBtnActive]}
             onPress={() => setFilter(type)}
+            activeOpacity={0.85}
           >
+            <MaterialIcons
+              name={type === 'all' ? 'list' : type === 'income' ? 'trending-up' : 'trending-down'}
+              size={16}
+              color={filter === type ? '#fff' : THEME.grey}
+            />
             <Text style={[styles.filterBtnText, filter === type && styles.filterBtnTextActive]}>
-              {type === 'all' ? 'All' : type === 'income' ? '📈 Income' : '📉 Expense'}
+              {type === 'all' ? 'All' : type === 'income' ? 'Income' : 'Expense'}
             </Text>
           </TouchableOpacity>
         ))}
@@ -82,7 +114,11 @@ export default function TransactionListScreen({ navigation }) {
       {/* Transaction List */}
       {filteredTransactions.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No transactions found!</Text>
+          <View style={[styles.emptyIconBg, { backgroundColor: THEME.surfaceLight }]}>
+            <MaterialIcons name="receipt-long" size={32} color={THEME.muted} />
+          </View>
+          <Text style={styles.emptyTitle}>No transactions found</Text>
+          <Text style={styles.emptySubText}>Add your first transaction to get started.</Text>
         </View>
       ) : (
         <FlatList
@@ -98,10 +134,11 @@ export default function TransactionListScreen({ navigation }) {
       <TouchableOpacity
         style={styles.addBtn}
         onPress={() => navigation.navigate('AddTransaction')}
+        activeOpacity={0.85}
       >
-        <Text style={styles.addBtnText}>+ Add Transaction</Text>
+        <MaterialIcons name="add" size={20} color="#fff" />
+        <Text style={styles.addBtnText}>Add Transaction</Text>
       </TouchableOpacity>
-
     </SafeAreaView>
   );
 }
@@ -109,130 +146,190 @@ export default function TransactionListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: THEME.background,
   },
+
+  // --- Header ---
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: COLORS.primary,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
-  backArrow: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: THEME.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   headerTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
+    color: THEME.white,
+    letterSpacing: -0.3,
+  },
+  countBadge: {
+    minWidth: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: THEME.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
   countText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '700',
+    color: THEME.primaryLight,
   },
+
+  // --- Filter Row ---
   filterRow: {
     flexDirection: 'row',
-    margin: 16,
-    gap: 10,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    gap: 8,
   },
   filterBtn: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 10,
     borderRadius: 12,
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
+    gap: 6,
+    backgroundColor: THEME.surface,
     borderWidth: 1,
-    borderColor: COLORS.lightGrey,
+    borderColor: THEME.border,
   },
   filterBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: THEME.primary,
+    borderColor: THEME.primary,
   },
   filterBtnText: {
     fontSize: 13,
-    color: COLORS.grey,
+    color: THEME.grey,
     fontWeight: '600',
   },
   filterBtnTextActive: {
-    color: COLORS.white,
+    color: '#fff',
   },
+
+  // --- List ---
   list: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 100,
   },
+
+  // --- Transaction Item ---
   transactionItem: {
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.surface,
     borderRadius: 16,
-    padding: 16,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   iconBox: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
-  icon: {
-    fontSize: 20,
+    marginRight: 14,
   },
   transactionInfo: {
     flex: 1,
+    marginRight: 8,
   },
   transactionTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontWeight: '600',
+    color: THEME.white,
+    marginBottom: 2,
   },
   transactionCategory: {
     fontSize: 12,
-    color: COLORS.grey,
-    marginTop: 2,
+    color: THEME.grey,
+    fontWeight: '400',
   },
   transactionRight: {
     alignItems: 'flex-end',
-    gap: 6,
+    gap: 4,
   },
   transactionAmount: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   deleteBtn: {
-    fontSize: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: THEME.danger + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+
+  // --- Empty State ---
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
+    marginTop: -40,
   },
-  emptyText: {
-    fontSize: 18,
-    color: COLORS.grey,
-  },
-  addBtn: {
-    backgroundColor: COLORS.primary,
-    marginHorizontal: 24,
-    marginBottom: 24,
-    paddingVertical: 18,
-    borderRadius: 16,
+  emptyIconBg: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: THEME.white,
+    marginTop: 16,
+    marginBottom: 6,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: THEME.grey,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  // --- Add Button ---
+  addBtn: {
+    position: 'absolute',
+    bottom: 24,
+    left: 16,
+    right: 16,
+    backgroundColor: THEME.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 14,
+    gap: 8,
+    shadowColor: THEME.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     elevation: 4,
   },
   addBtnText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

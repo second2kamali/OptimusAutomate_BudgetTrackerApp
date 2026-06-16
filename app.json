@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.awais_123.OptimusAutomate_FlashcardQuizApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

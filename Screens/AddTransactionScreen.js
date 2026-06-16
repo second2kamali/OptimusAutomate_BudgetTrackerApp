@@ -4,8 +4,25 @@ import {
   SafeAreaView, TextInput, Alert,
   KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
-import { COLORS } from '../Constants/colors';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useBudget } from '../Context/BudgetContext';
+
+// --- SAME DARK THEME (No backend changes) ---
+const THEME = {
+  primary: '#6366F1',
+  primaryLight: '#818CF8',
+  background: '#0F172A',
+  surface: '#1E293B',
+  surfaceLight: '#334155',
+  border: '#334155',
+  white: '#F8FAFC',
+  black: '#F1F5F9',
+  grey: '#94A3B8',
+  muted: '#64748B',
+  income: '#34D399',
+  expense: '#F87171',
+  danger: '#EF4444',
+};
 
 const CATEGORIES = {
   income: ['Salary', 'Business', 'Freelance', 'Investment', 'Other'],
@@ -47,33 +64,50 @@ export default function AddTransactionScreen({ navigation }) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backArrow}>← Back</Text>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <MaterialIcons name="arrow-back" size={22} color={THEME.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>+ Add Transaction</Text>
-          <View style={{ width: 50 }} />
+          <Text style={styles.headerTitle}>Add Transaction</Text>
+          <View style={styles.backBtn} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Type Selector */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Transaction Type</Text>
+            <Text style={styles.sectionTitle}>Type</Text>
             <View style={styles.typeRow}>
               <TouchableOpacity
                 style={[styles.typeBtn, type === 'income' && styles.typeBtnActiveIncome]}
                 onPress={() => { setType('income'); setCategory(''); }}
+                activeOpacity={0.85}
               >
+                <MaterialIcons
+                  name="trending-up"
+                  size={18}
+                  color={type === 'income' ? '#fff' : THEME.grey}
+                />
                 <Text style={[styles.typeBtnText, type === 'income' && styles.typeBtnTextActive]}>
-                  📈 Income
+                  Income
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.typeBtn, type === 'expense' && styles.typeBtnActiveExpense]}
                 onPress={() => { setType('expense'); setCategory(''); }}
+                activeOpacity={0.85}
               >
+                <MaterialIcons
+                  name="trending-down"
+                  size={18}
+                  color={type === 'expense' ? '#fff' : THEME.grey}
+                />
                 <Text style={[styles.typeBtnText, type === 'expense' && styles.typeBtnTextActive]}>
-                  📉 Expense
+                  Expense
                 </Text>
               </TouchableOpacity>
             </View>
@@ -87,7 +121,7 @@ export default function AddTransactionScreen({ navigation }) {
               placeholder="e.g. Monthly Salary"
               value={title}
               onChangeText={setTitle}
-              placeholderTextColor={COLORS.grey}
+              placeholderTextColor={THEME.muted}
             />
           </View>
 
@@ -100,7 +134,7 @@ export default function AddTransactionScreen({ navigation }) {
               value={amount}
               onChangeText={setAmount}
               keyboardType="numeric"
-              placeholderTextColor={COLORS.grey}
+              placeholderTextColor={THEME.muted}
             />
           </View>
 
@@ -111,15 +145,19 @@ export default function AddTransactionScreen({ navigation }) {
               {CATEGORIES[type].map(cat => (
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.categoryBtn,
+                  style={[
+                    styles.categoryBtn,
                     category === cat && {
-                      backgroundColor: type === 'income' ? COLORS.income : COLORS.expense
+                      backgroundColor: type === 'income' ? THEME.income : THEME.expense,
+                      borderColor: type === 'income' ? THEME.income : THEME.expense,
                     }
                   ]}
                   onPress={() => setCategory(cat)}
+                  activeOpacity={0.85}
                 >
-                  <Text style={[styles.categoryBtnText,
-                    category === cat && { color: COLORS.white }
+                  <Text style={[
+                    styles.categoryBtnText,
+                    category === cat && { color: '#fff', fontWeight: '700' }
                   ]}>
                     {cat}
                   </Text>
@@ -131,13 +169,14 @@ export default function AddTransactionScreen({ navigation }) {
           {/* Save Button */}
           <TouchableOpacity
             style={[styles.saveBtn, {
-              backgroundColor: type === 'income' ? COLORS.income : COLORS.expense
+              backgroundColor: type === 'income' ? THEME.income : THEME.expense
             }]}
             onPress={handleSave}
+            activeOpacity={0.85}
           >
-            <Text style={styles.saveBtnText}>💾 Save Transaction</Text>
+            <MaterialIcons name="check" size={20} color="#fff" />
+            <Text style={styles.saveBtnText}>Save Transaction</Text>
           </TouchableOpacity>
-
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -147,108 +186,138 @@ export default function AddTransactionScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: THEME.background,
   },
+
+  // --- Header ---
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: COLORS.primary,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
-  backArrow: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: THEME.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   headerTitle: {
-    color: COLORS.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: THEME.white,
+    letterSpacing: -0.3,
   },
+
+  // --- Scroll ---
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+
+  // --- Section ---
   section: {
-    marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 10,
+    fontSize: 13,
+    fontWeight: '600',
+    color: THEME.grey,
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
+
+  // --- Type Buttons ---
   typeRow: {
     flexDirection: 'row',
     gap: 12,
   },
   typeBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderWidth: 2,
-    borderColor: COLORS.lightGrey,
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 16,
+    gap: 8,
+    backgroundColor: THEME.surface,
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   typeBtnActiveIncome: {
-    backgroundColor: COLORS.income,
-    borderColor: COLORS.income,
+    backgroundColor: THEME.income,
+    borderColor: THEME.income,
   },
   typeBtnActiveExpense: {
-    backgroundColor: COLORS.expense,
-    borderColor: COLORS.expense,
+    backgroundColor: THEME.expense,
+    borderColor: THEME.expense,
   },
   typeBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.grey,
+    fontSize: 15,
+    fontWeight: '700',
+    color: THEME.grey,
   },
   typeBtnTextActive: {
-    color: COLORS.white,
+    color: '#fff',
   },
+
+  // --- Inputs ---
   input: {
-    backgroundColor: COLORS.white,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: THEME.surface,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
     fontSize: 16,
-    color: COLORS.text,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    color: THEME.white,
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
+
+  // --- Category Grid ---
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
   categoryBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: COLORS.white,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: THEME.surface,
     borderWidth: 1,
-    borderColor: COLORS.lightGrey,
-    elevation: 2,
+    borderColor: THEME.border,
   },
   categoryBtnText: {
     fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '600',
+    color: THEME.white,
+    fontWeight: '500',
   },
+
+  // --- Save Button ---
   saveBtn: {
-    marginHorizontal: 20,
-    marginVertical: 30,
+    marginTop: 32,
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 4,
   },
   saveBtnText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

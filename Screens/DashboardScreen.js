@@ -3,8 +3,25 @@ import {
   View, Text, TouchableOpacity,
   StyleSheet, SafeAreaView, ScrollView, Alert
 } from 'react-native';
-import { COLORS } from '../Constants/colors';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useBudget } from '../Context/BudgetContext';
+
+// --- SAME DARK THEME (No backend changes) ---
+const THEME = {
+  primary: '#6366F1',
+  primaryLight: '#818CF8',
+  background: '#0F172A',
+  surface: '#1E293B',
+  surfaceLight: '#334155',
+  border: '#334155',
+  white: '#F8FAFC',
+  black: '#F1F5F9',
+  grey: '#94A3B8',
+  muted: '#64748B',
+  income: '#34D399',
+  expense: '#F87171',
+  danger: '#EF4444',
+};
 
 export default function DashboardScreen({ navigation }) {
   const { totalIncome, totalExpense, balance, budgetLimit, updateBudgetLimit } = useBudget();
@@ -28,39 +45,57 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>← Back</Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="arrow-back" size={22} color={THEME.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>📊 Dashboard</Text>
-        <View style={{ width: 50 }} />
+        <Text style={styles.headerTitle}>Dashboard</Text>
+        <View style={styles.backBtn} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Balance Card */}
         <View style={styles.balanceCard}>
+          <View style={[
+            styles.balanceIcon,
+            { backgroundColor: balance >= 0 ? THEME.income + '18' : THEME.expense + '18' }
+          ]}>
+            <MaterialIcons
+              name="account-balance-wallet"
+              size={24}
+              color={balance >= 0 ? THEME.income : THEME.expense}
+            />
+          </View>
           <Text style={styles.balanceLabel}>Current Balance</Text>
-          <Text style={[styles.balanceAmount, { color: balance >= 0 ? COLORS.income : COLORS.expense }]}>
+          <Text style={[styles.balanceAmount, { color: balance >= 0 ? THEME.income : THEME.expense }]}>
             Rs. {balance.toLocaleString()}
           </Text>
         </View>
 
         {/* Income & Expense Row */}
         <View style={styles.row}>
-          <View style={[styles.statCard, { borderLeftColor: COLORS.income }]}>
-            <Text style={styles.statIcon}>📈</Text>
+          <View style={[styles.statCard, { borderLeftColor: THEME.income }]}>
+            <View style={[styles.statIconWrap, { backgroundColor: THEME.income + '18' }]}>
+              <MaterialIcons name="trending-up" size={20} color={THEME.income} />
+            </View>
             <Text style={styles.statLabel}>Total Income</Text>
-            <Text style={[styles.statAmount, { color: COLORS.income }]}>
+            <Text style={[styles.statAmount, { color: THEME.income }]}>
               Rs. {totalIncome.toLocaleString()}
             </Text>
           </View>
-          <View style={[styles.statCard, { borderLeftColor: COLORS.expense }]}>
-            <Text style={styles.statIcon}>📉</Text>
+          <View style={[styles.statCard, { borderLeftColor: THEME.expense }]}>
+            <View style={[styles.statIconWrap, { backgroundColor: THEME.expense + '18' }]}>
+              <MaterialIcons name="trending-down" size={20} color={THEME.expense} />
+            </View>
             <Text style={styles.statLabel}>Total Expense</Text>
-            <Text style={[styles.statAmount, { color: COLORS.expense }]}>
+            <Text style={[styles.statAmount, { color: THEME.expense }]}>
               Rs. {totalExpense.toLocaleString()}
             </Text>
           </View>
@@ -69,9 +104,16 @@ export default function DashboardScreen({ navigation }) {
         {/* Budget Progress */}
         <View style={styles.budgetCard}>
           <View style={styles.budgetHeader}>
-            <Text style={styles.budgetTitle}>Monthly Budget</Text>
-            <TouchableOpacity onPress={handleSetBudget} style={styles.editBtn}>
-              <Text style={styles.editBtnText}>✏️ Edit</Text>
+            <View style={styles.budgetTitleRow}>
+              <MaterialIcons name="savings" size={18} color={THEME.white} />
+              <Text style={styles.budgetTitle}>Monthly Budget</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.editBtn}
+              onPress={handleSetBudget}
+              activeOpacity={0.85}
+            >
+              <MaterialIcons name="edit" size={16} color={THEME.grey} />
             </TouchableOpacity>
           </View>
 
@@ -83,15 +125,22 @@ export default function DashboardScreen({ navigation }) {
           <View style={styles.progressContainer}>
             <View style={[styles.progressBar, {
               width: `${Math.min(expensePercentage, 100)}%`,
-              backgroundColor: isOverBudget ? COLORS.expense : COLORS.primary,
+              backgroundColor: isOverBudget ? THEME.expense : THEME.primary,
             }]} />
           </View>
 
-          <Text style={[styles.progressText, { color: isOverBudget ? COLORS.expense : COLORS.grey }]}>
-            {isOverBudget
-              ? `⚠️ Over budget by Rs. ${(totalExpense - budgetLimit).toLocaleString()}!`
-              : `✅ Rs. ${(budgetLimit - totalExpense).toLocaleString()} remaining`}
-          </Text>
+          <View style={styles.progressStatusRow}>
+            <MaterialIcons
+              name={isOverBudget ? 'warning' : 'check-circle'}
+              size={16}
+              color={isOverBudget ? THEME.expense : THEME.income}
+            />
+            <Text style={[styles.progressText, { color: isOverBudget ? THEME.expense : THEME.grey }]}>
+              {isOverBudget
+                ? `Over budget by Rs. ${(totalExpense - budgetLimit).toLocaleString()}`
+                : `Rs. ${(budgetLimit - totalExpense).toLocaleString()} remaining`}
+            </Text>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -99,20 +148,23 @@ export default function DashboardScreen({ navigation }) {
           <Text style={styles.actionsTitle}>Quick Actions</Text>
           <View style={styles.actionsRow}>
             <TouchableOpacity
-              style={[styles.actionBtn, { backgroundColor: COLORS.income }]}
+              style={[styles.actionBtn, { backgroundColor: THEME.income }]}
               onPress={() => navigation.navigate('AddTransaction')}
+              activeOpacity={0.85}
             >
-              <Text style={styles.actionBtnText}>+ Add Income</Text>
+              <MaterialIcons name="add" size={18} color="#fff" />
+              <Text style={styles.actionBtnText}>Add Income</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.actionBtn, { backgroundColor: COLORS.expense }]}
+              style={[styles.actionBtn, { backgroundColor: THEME.expense }]}
               onPress={() => navigation.navigate('AddTransaction')}
+              activeOpacity={0.85}
             >
-              <Text style={styles.actionBtnText}>- Add Expense</Text>
+              <MaterialIcons name="remove" size={18} color="#fff" />
+              <Text style={styles.actionBtnText}>Add Expense</Text>
             </TouchableOpacity>
           </View>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -121,142 +173,184 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: THEME.background,
   },
+
+  // --- Header ---
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: COLORS.primary,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
-  backArrow: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: THEME.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   headerTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
+    color: THEME.white,
+    letterSpacing: -0.3,
   },
+
+  // --- Scroll ---
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+
+  // --- Balance Card ---
   balanceCard: {
-    backgroundColor: COLORS.white,
-    margin: 16,
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: THEME.surface,
+    borderRadius: 24,
+    padding: 28,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    marginBottom: 12,
+  },
+  balanceIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
   },
   balanceLabel: {
-    fontSize: 14,
-    color: COLORS.grey,
+    fontSize: 13,
+    color: THEME.grey,
+    fontWeight: '500',
+    marginBottom: 8,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   balanceAmount: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginTop: 8,
+    fontSize: 34,
+    fontWeight: '800',
+    letterSpacing: -1,
   },
+
+  // --- Stats Row ---
   row: {
     flexDirection: 'row',
-    marginHorizontal: 16,
     gap: 12,
+    marginBottom: 12,
   },
   statCard: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: THEME.surface,
+    borderRadius: 20,
+    padding: 18,
     borderLeftWidth: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
-  statIcon: {
-    fontSize: 24,
-    marginBottom: 8,
+  statIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   statLabel: {
     fontSize: 12,
-    color: COLORS.grey,
-    marginBottom: 4,
+    color: THEME.grey,
+    marginBottom: 6,
+    fontWeight: '500',
+    letterSpacing: 0.3,
   },
   statAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
+
+  // --- Budget Card ---
   budgetCard: {
-    backgroundColor: COLORS.white,
-    margin: 16,
-    borderRadius: 20,
-    padding: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    backgroundColor: THEME.surface,
+    borderRadius: 24,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    marginBottom: 12,
   },
   budgetHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
+  },
+  budgetTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   budgetTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '700',
+    color: THEME.white,
+    letterSpacing: -0.3,
   },
   editBtn: {
-    backgroundColor: COLORS.lightGrey,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  editBtnText: {
-    fontSize: 13,
-    color: COLORS.text,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: THEME.surfaceLight,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   budgetLimit: {
     fontSize: 14,
-    color: COLORS.grey,
-    marginBottom: 12,
+    color: THEME.grey,
+    marginBottom: 14,
+    fontWeight: '500',
   },
   progressContainer: {
-    height: 12,
-    backgroundColor: COLORS.lightGrey,
-    borderRadius: 6,
+    height: 8,
+    backgroundColor: THEME.surfaceLight,
+    borderRadius: 10,
     overflow: 'hidden',
   },
   progressBar: {
-    height: 12,
-    borderRadius: 6,
+    height: 8,
+    borderRadius: 10,
+  },
+  progressStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
   },
   progressText: {
     fontSize: 13,
-    marginTop: 8,
     fontWeight: '600',
   },
+
+  // --- Actions Card ---
   actionsCard: {
-    backgroundColor: COLORS.white,
-    marginHorizontal: 16,
-    marginBottom: 24,
-    borderRadius: 20,
-    padding: 20,
-    elevation: 3,
+    backgroundColor: THEME.surface,
+    borderRadius: 24,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: THEME.border,
   },
   actionsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 12,
+    fontSize: 16,
+    fontWeight: '700',
+    color: THEME.white,
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -264,13 +358,16 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 16,
+    gap: 8,
   },
   actionBtnText: {
-    color: COLORS.white,
+    color: '#fff',
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
 });
