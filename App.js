@@ -1,18 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { CardsProvider } from './Context/CardsContext';
+import { BudgetProvider } from './Context/BudgetContext';
 
 import HomeScreen from './Screens/HomeScreen';
-import QuizScreen from './Screens/QuizScreen';
-import ManageCardsScreen from './Screens/ManageCardsScreen';
-import AddEditScreen from './Screens/AddEditScreen';
+import DashboardScreen from './Screens/DashboardScreen';
+import TransactionListScreen from './Screens/TransactionListScreen';
+import AddTransactionScreen from './Screens/AddTransactionScreen';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
-    <CardsProvider>
+    <BudgetProvider>
       <NavigationContainer>
         <StatusBar style="auto" />
         <Stack.Navigator
@@ -20,11 +20,11 @@ export default function App() {
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Quiz" component={QuizScreen} />
-          <Stack.Screen name="ManageCards" component={ManageCardsScreen} />
-          <Stack.Screen name="AddEditCard" component={AddEditScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <Stack.Screen name="TransactionList" component={TransactionListScreen} />
+          <Stack.Screen name="AddTransaction" component={AddTransactionScreen} />
         </Stack.Navigator>
       </NavigationContainer>
-    </CardsProvider>
+    </BudgetProvider>
   );
 }
